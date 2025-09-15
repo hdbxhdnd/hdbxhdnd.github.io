@@ -30,13 +30,17 @@
     <p id="tip">如果无法跳转，请确认是否安装了对应的App。</p>
 
     <script>
-        // 预设的文案内容
-        const prefillText = "这是我从NFC标签自动分享的内容！太酷了！#NFC神奇玩法";
+        // --- 核心配置区：在这里设置你的文案和视频链接 ---
+        const prefillText = 不轻狂怎么是年少，太酷了！#NFC神奇玩法"; // 替换成你的文案
+        const videoUrl = "https://你的服务器地址.com/路径/视频文件名.mp4"; // 替换成你上传的视频的真实URL地址
 
+        // --- 函数区：不要修改函数名，只需确认内容正确 ---
         function shareToDouyin() {
-            // 尝试跳转到抖音
-            window.location.href = `snssdk1128://platformapi/startapp?start_type=share&share_type=text&content=${encodeURIComponent(prefillText)}`;
-            // 如果跳转失败（比如没安装App），5秒后提示用户
+            // 1. 尝试跳转到抖音并传递参数
+            let douyinScheme = `snssdk1128://platformapi/startapp?start_type=share&share_type=video&video_path=${encodeURIComponent(videoUrl)}&content=${encodeURIComponent(prefillText)}`;
+            window.location.href = douyinScheme;
+            
+            // 2. 如果跳转失败（比如没安装App），5秒后提示用户
             setTimeout(function() {
                 if (!document.hidden) {
                     document.getElementById('tip').innerHTML = '跳转抖音失败，您可能未安装App。请手动打开抖音。';
@@ -45,8 +49,9 @@
         }
 
         function shareToKuaishou() {
-            // 尝试跳转到快手
-            window.location.href = `kwai://profile?prefecth_text=${encodeURIComponent(prefillText)}`;
+            // 同理，可以实现快手的跳转
+            let kuaishouScheme = `kwai://profile?prefecth_text=${encodeURIComponent(prefillText)}`;
+            window.location.href = kuaishouScheme;
             setTimeout(function() {
                 if (!document.hidden) {
                     document.getElementById('tip').innerHTML = '跳转快手失败，您可能未安装App。请手动打开快手。';
