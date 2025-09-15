@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>一键分享</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .btn { 
+            display: block; 
+            width: 200px; 
+            margin: 15px auto; 
+            padding: 15px; 
+            font-size: 18px; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+        }
+        #douyin { background-color: #000000; } /* 抖音黑 */
+        #kuaishou { background-color: #ffc300; color: black; } /* 快手黄 */
+    </style>
+</head>
+<body>
+    <h2>请选择要分享的平台</h2>
+
+    <button class="btn" id="douyin" onclick="shareToDouyin()">分享到抖音</button>
+    <button class="btn" id="kuaishou" onclick="shareToKuaishou()">分享到快手</button>
+
+    <p id="tip">如果无法跳转，请确认是否安装了对应的App。</p>
+
+    <script>
+        // 预设的文案内容
+        const prefillText = "这是我从NFC标签自动分享的内容！太酷了！#NFC神奇玩法";
+
+        function shareToDouyin() {
+            // 尝试跳转到抖音
+            window.location.href = `snssdk1128://platformapi/startapp?start_type=share&share_type=text&content=${encodeURIComponent(prefillText)}`;
+            // 如果跳转失败（比如没安装App），5秒后提示用户
+            setTimeout(function() {
+                if (!document.hidden) {
+                    document.getElementById('tip').innerHTML = '跳转抖音失败，您可能未安装App。请手动打开抖音。';
+                }
+            }, 5000);
+        }
+
+        function shareToKuaishou() {
+            // 尝试跳转到快手
+            window.location.href = `kwai://profile?prefecth_text=${encodeURIComponent(prefillText)}`;
+            setTimeout(function() {
+                if (!document.hidden) {
+                    document.getElementById('tip').innerHTML = '跳转快手失败，您可能未安装App。请手动打开快手。';
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
