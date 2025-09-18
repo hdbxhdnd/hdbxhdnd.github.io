@@ -6,30 +6,28 @@
     <title>NFC一键分享中枢</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             padding: 20px;
-            color: #333;
         }
         .container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             text-align: center;
-            max-width: 400px;
             width: 100%;
+            max-width: 400px;
         }
         h1 {
             color: #2c3e50;
@@ -41,13 +39,13 @@
             margin-bottom: 30px;
             font-size: 14px;
         }
-        .btn {
+        .share-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
-            padding: 16px;
-            margin: 12px 0;
+            padding: 16px 20px;
+            margin: 15px 0;
             border: none;
             border-radius: 12px;
             font-size: 16px;
@@ -56,51 +54,59 @@
             transition: all 0.3s ease;
             color: white;
         }
-        .btn:hover {
+        .share-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
-        .btn:active {
+        .share-btn:active {
             transform: translateY(0);
         }
-        .btn-douyin {
-            background: linear-gradient(45deg, #000000, #3e3e3e);
+        #btn-douyin {
+            background: linear-gradient(45deg, #000000, #3a3a3a);
         }
-        .btn-kuaishou {
-            background: linear-gradient(45deg, #ffc300, #ff5733);
-            color: #000;
+        #btn-kuaishou {
+            background: linear-gradient(45deg, #FF0000, #FF9000);
         }
-        .btn-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
-        }
-        .status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f8f9fa;
-            display: none;
-        }
-        .loading {
-            color: #007bff;
-        }
-        .error {
-            color: #dc3545;
-            background: #ffeaea;
-        }
-        .success {
-            color: #28a745;
-            background: #f0fff4;
-        }
-        .instructions {
+        .status-box {
             margin-top: 25px;
             padding: 15px;
-            background: #e3f2fd;
+            border-radius: 12px;
+            font-size: 14px;
+            display: none;
+        }
+        .status-loading {
+            display: block;
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        .status-error {
+            display: block;
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .status-success {
+            display: block;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .backup-guide {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3e5f5;
             border-radius: 10px;
-            font-size: 12px;
+            font-size: 13px;
             text-align: left;
             display: none;
+        }
+        textarea {
+            width: 100%;
+            height: 70px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -109,106 +115,128 @@
         <h1>🎯 NFC一键分享</h1>
         <p class="subtitle">选择您要分享到的平台</p>
         
-        <button class="btn btn-douyin" onclick="shareToPlatform('douyin')">
+        <button id="btn-douyin" class="share-btn" onclick="startShare('douyin')">
             <span>分享到抖音</span>
         </button>
         
-        <button class="btn btn-kuaishou" onclick="shareToPlatform('kuaishou')">
+        <button id="btn-kuaishou" class="share-btn" onclick="startShare('kuaishou')">
             <span>分享到快手</span>
         </button>
 
-        <div id="statusBox" class="status">
-            <p id="statusText"></p>
+        <div id="status" class="status-box">
+            <p id="status-text">正在准备跳转...</p>
         </div>
 
-        <div id="instructions" class="instructions">
-            <strong>📝 操作指引：</strong>
-            <p>1. 跳转后请等待视频加载</p>
-            <p>2. 文案已自动填充，可自行修改</p>
-            <p>3. 点击发布即可完成分享</p>
+        <div id="backup-guide" class="backup-guide">
+            <strong>📝 手动操作指南：</strong>
+            <p id="guide-text"></p>
+            <textarea id="copy-text" onclick="this.select()" readonly></textarea>
+            <p><small>💡 提示：复制上方文案后，手动打开App即可</small></p>
         </div>
     </div>
 
     <script>
         // ==================== 配置区域 ====================
-        // 请修改以下为你自己的内容！
-        const CONFIG = {
+        // 已配置好视频直链和快乐分享文案
+        const APP_CONFIG = {
             douyin: {
-                videoUrl: https://net.xieren.xyz/parser?url=https://www.123865.com/s/ZlbMvd-jpppd
-                prefillText: "这是通过NFC自动分享的视频！太神奇了！🚀 #NFC黑科技 #智能生活",
+                name: '抖音',
+                videoUrl: "https://v95-web-sz.douyinvod.com/88254fe929fc8ac62df2e8760f85bcba/68cc133e/video/tos/cn/tos-cn-ve-15/oQ1ArEFnuQD3ZggA1aPgfJEuofI09dLADN11sB/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=1702&bt=1702&cs=0&ds=6&ft=GZnU0RqeffPdXP~ka1jNvAq-antLjrK5YPRCRkartW__ejVhWL6&mime_type=video_mp4&qs=0&rc=NGg3OjRmOTMzPDc7Ojc7NUBpanFxa2o5cnBvNTMzNGkzM0AyMzAvYGI1NTYxMjZiLjAyYSMzXzFfMmRjbmNhLS1kLTBzcw%3D%3D&btag=c0000e00018000&cquery=100o_100w_100B_100H_100K&dy_q=1758193903&feature_id=f0150a16a324336cda5d6dd0b69ed299&l=2025091819114364B1552B1A8BBBAE5B19&testst=1758193909867",
+                prefillText: "🌈 分享快乐时刻！每一天都值得被记录和庆祝！🎉\n\n生活中的小确幸就是最大的幸福，把这份快乐传递给你！💖\n\n#分享快乐 #幸福时光 #生活记录 #正能量传递",
                 scheme: "snssdk1128://platformapi/startapp?start_type=share&share_type=video&video_path={videoUrl}&content={text}"
             },
             kuaishou: {
-                videoUrl:https:https://net.xieren.xyz/parser?url=https://www.123865.com/s/ZlbMvd-jpppd
-                prefillText: "用NFC触碰一下就能分享视频，科技改变生活！🌟 #快手黑科技",
+                name: '快手',
+                videoUrl: "https://你的快手视频直链.mp4", // 如需快手分享，请替换此链接
+                prefillText: "🌈 分享快乐时刻！每一天都值得被记录和庆祝！🎉\n\n生活中的小确幸就是最大的幸福，把这份快乐传递给你！💖\n\n#分享快乐 #幸福时光 #生活记录",
                 scheme: "kwai://profile?prefecth_text={text}"
             }
         };
         // ==================== 配置结束 ====================
 
-        function shareToPlatform(platform) {
-            const config = CONFIG[platform];
-            if (!config) return;
+        // 主分享函数
+        function startShare(platform) {
+            console.log("开始分享到:", platform);
+            
+            const config = APP_CONFIG[platform];
+            if (!config) {
+                showMessage('错误：未找到该平台的配置', 'error');
+                return;
+            }
 
             // 显示加载状态
-            showStatus('正在准备跳转...', 'loading');
-            document.getElementById('instructions').style.display = 'block';
+            showMessage('正在准备跳转...', 'loading');
 
-            // 替换Scheme中的参数
-            let schemeUrl = config.scheme
-                .replace('{videoUrl}', encodeURIComponent(config.videoUrl))
-                .replace('{text}', encodeURIComponent(config.prefillText));
+            // 构建跳转链接
+            const jumpUrl = buildJumpUrl(config);
+            console.log("跳转链接:", jumpUrl);
 
-            console.log('跳转链接:', schemeUrl); // 调试用
-
-            // 记录跳转时间
-            const startTime = Date.now();
+            // 记录跳转开始时间
+            const jumpStartTime = Date.now();
             
             // 尝试跳转
-            window.location.href = schemeUrl;
+            window.location.href = jumpUrl;
             
-            // 检查是否跳转成功
-            setTimeout(() => {
-                // 如果200ms后页面仍然可见，说明跳转失败
-                if (Date.now() - startTime > 200 && !document.hidden) {
-                    showStatus(`跳转失败，请确保已安装${getPlatformName(platform)}`, 'error');
-                    provideAlternativeSolution(platform, config.prefillText);
-                }
-            }, 200);
+            // 检查跳转是否成功
+            checkJumpStatus(jumpStartTime, platform, config.prefillText);
         }
 
-        function showStatus(message, type) {
-            const statusBox = document.getElementById('statusBox');
-            const statusText = document.getElementById('statusText');
+        // 构建跳转链接
+        function buildJumpUrl(config) {
+            return config.scheme
+                .replace('{videoUrl}', encodeURIComponent(config.videoUrl))
+                .replace('{text}', encodeURIComponent(config.prefillText));
+        }
+
+        // 检查跳转状态
+        function checkJumpStatus(startTime, platform, text) {
+            setTimeout(() => {
+                // 如果一段时间后页面仍然可见，说明跳转失败
+                if (Date.now() - startTime > 500 && !document.hidden) {
+                    showMessage(`跳转${APP_CONFIG[platform].name}失败，请确保已安装App`, 'error');
+                    showBackupGuide(platform, text);
+                }
+            }, 500);
+        }
+
+        // 显示状态信息
+        function showMessage(message, type) {
+            const statusBox = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
             
             statusText.textContent = message;
-            statusBox.className = 'status ' + type;
+            statusBox.className = 'status-box status-' + type;
             statusBox.style.display = 'block';
+            
+            // 如果是成功信息，3秒后隐藏
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusBox.style.display = 'none';
+                }, 3000);
+            }
         }
 
-        function getPlatformName(platform) {
-            return platform === 'douyin' ? '抖音' : '快手';
+        // 显示备用方案
+        function showBackupGuide(platform, text) {
+            const guide = document.getElementById('backup-guide');
+            const guideText = document.getElementById('guide-text');
+            const copyText = document.getElementById('copy-text');
+            
+            guideText.innerHTML = `由于系统限制，自动跳转${APP_CONFIG[platform].name}失败，请按以下步骤操作：`;
+            copyText.value = text;
+            guide.style.display = 'block';
         }
 
-        function provideAlternativeSolution(platform, text) {
-            const instructions = document.getElementById('instructions');
-            instructions.innerHTML = `
-                <strong>📋 备用方案：</strong>
-                <p>1. 复制下方文案</p>
-                <textarea style="width: 100%; height: 60px; margin: 8px 0; padding: 8px; border-radius: 6px; border: 1px solid #ddd;" onclick="this.select()">${text}</textarea>
-                <p>2. 手动打开${getPlatformName(platform)}</p>
-                <p>3. 选择视频并粘贴文案发布</p>
-            `;
-            instructions.style.display = 'block';
-        }
-
-        // 页面可见性检测
+        // 页面可见性变化检测（用于检测是否成功跳转）
         document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
-                // 页面隐藏，说明跳转成功
-                showStatus('跳转成功！请在APP中完成分享', 'success');
+                showMessage('跳转成功！请在APP中完成分享', 'success');
             }
         });
+
+        // 初始化完成提示
+        console.log("NFC分享中枢初始化完成");
+        console.log("抖音视频直链已配置:", APP_CONFIG.douyin.videoUrl);
     </script>
 </body>
 </html>
