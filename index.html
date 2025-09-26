@@ -3,89 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFC一键分享到抖音</title>
+    <title>NFC一键分享中枢</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'PingFang SC', sans-serif; }
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 100%; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
         
-        .share-btn { 
-            width: 100%; padding: 18px; margin: 12px 0; border: none; border-radius: 12px; 
-            font-size: 17px; font-weight: 600; cursor: pointer; color: white; transition: all 0.3s;
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .platform-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .platform-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .platform-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .platform-btn:hover::before {
+            left: 100%;
+        }
+        
+        .platform-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .platform-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-douyin {
             background: linear-gradient(45deg, #000000, #FE2C55);
         }
-        .share-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         
-        .status-box { margin: 20px 0; padding: 15px; border-radius: 12px; display: none; }
-        .loading { background: #e3f2fd; color: #1565c0; display: block; }
-        .success { background: #e8f5e9; color: #2e7d32; display: block; }
-        .error { background: #ffebee; color: #c62828; display: block; }
+        .btn-kuaishou {
+            background: linear-gradient(45deg, #FF0000, #FF9000);
+        }
+        
+        .btn-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            filter: brightness(0) invert(1);
+        }
+        
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            display: none;
+            text-align: left;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-loading {
+            display: block;
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .status-success {
+            display: block;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .status-error {
+            display: block;
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+        
+        .guide-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-size: 14px;
+            text-align: left;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .guide-box h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .guide-box ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .guide-box li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 15px 0;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .note {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 20px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        
+        .success-animation {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .success-animation svg {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .checkmark {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: draw 1s ease-in-out forwards;
+        }
+        
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎯 NFC一键分享</h1>
-        <p style="color: #666; margin: 10px 0 30px;">点击直接跳转到抖音发布页面</p>
+        <p class="subtitle">选择分享平台，自动跳转到发布页面<br>视频和文案已准备就绪</p>
         
-        <button class="share-btn" onclick="shareToDouyin()">
-            📹 分享到抖音
-        </button>
-
+        <div class="platform-buttons">
+            <button class="platform-btn btn-douyin" onclick="shareToDouyin()">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19.695 7.05c-.42-.42-1.05-.42-1.47 0-.42.42-.42 1.05 0 1.47.42.42 1.05.42 1.47 0 .42-.42.42-1.05 0-1.47zM11.175 5.85c-3.33 0-6.03 2.7-6.03 6.03 0 3.33 2.7 6.03 6.03 6.03 3.33 0 6.03-2.7 6.03-6.03 0-3.33-2.7-6.03-6.03-6.03zm0 10.56c-2.49 0-4.53-2.04-4.53-4.53s2.04-4.53 4.53-4.53 4.53 2.04 4.53 4.53-2.04 4.53-4.53 4.53z"/>
+                    <path d="M18.225 14.85c-.72 0-1.35.63-1.35 1.35 0 .72.63 1.35 1.35 1.35.72 0 1.35-.63 1.35-1.35 0-.72-.63-1.35-1.35-1.35zM4.845 7.05c-.42-.42-1.05-.42-1.47 0-.42.42-.42 1.05 0 1.47.42.42 1.05.42 1.47 0 .42-.42.42-1.05 0-1.47z"/>
+                </svg>
+                分享到抖音
+            </button>
+            
+            <button class="platform-btn btn-kuaishou" onclick="shareToKuaishou()">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.625 5.25c-1.14 0-2.25.36-3.15 1.05L12.9 7.35c-.3.24-.75.24-1.05 0L9.525 6.3c-.9-.69-2.01-1.05-3.15-1.05C3.585 5.25 1.5 7.335 1.5 9.9c0 2.565 2.085 4.65 4.65 4.65.84 0 1.65-.24 2.34-.69l1.35.9c.3.21.69.21 1.05 0l1.35-.9c.69.45 1.5.69 2.34.69 2.565 0 4.65-2.085 4.65-4.65 0-2.565-2.085-4.65-4.65-4.65z"/>
+                    <path d="M17.625 14.25c-.84 0-1.65.24-2.34.69l-1.35-.9c-.3-.21-.69-.21-1.05 0l-1.35.9c-.69-.45-1.5-.69-2.34-.69-1.14 0-2.25.36-3.15 1.05l-1.35.9c-.3.21-.69.21-1.05 0l-1.35-.9c-.9-.69-2.01-1.05-3.15-1.05v3c1.14 0 2.25.36 3.15 1.05l1.35.9c.3.21.69.21 1.05 0l1.35-.9c.9.69 2.01 1.05 3.15 1.05 1.14 0 2.25-.36 3.15-1.05l1.35.9c.3.21.69.21 1.05 0l1.35-.9c.9-.69 2.01-1.05 3.15-1.05v-3z"/>
+                </svg>
+                分享到快手
+            </button>
+        </div>
+        
+        <div class="success-animation" id="successAnimation">
+            <svg viewBox="0 0 52 52">
+                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" stroke="#4caf50" stroke-width="2"/>
+                <path class="checkmark" fill="none" stroke="#4caf50" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+            <p>跳转成功！请在APP中完成发布</p>
+        </div>
+        
         <div id="status" class="status-box">
-            <p id="status-text">准备就绪</p>
+            <p id="status-text"></p>
+        </div>
+        
+        <div id="guideBox" class="guide-box">
+            <h3>📋 操作指引</h3>
+            <p id="guide-text"></p>
+            <textarea id="copy-text" onclick="this.select()" readonly></textarea>
+            <p><small>💡 提示：文案已自动选中，请复制后粘贴到APP中</small></p>
+        </div>
+        
+        <div class="note">
+            <p>通过NFC标签自动跳转 | 视频和文案已预配置</p>
         </div>
     </div>
 
     <script>
         // ==================== 配置信息 ====================
         const CONFIG = {
-            videoUrl: "https://v95-web-sz.douyinvod.com/88254fe929fc8ac62df2e8760f85bcba/68cc133e/video/tos/cn/tos-cn-ve-15/oQ1ArEFnuQD3ZggA1aPgfJEuofI09dLADN11sB/?your_params",
-            prefillText: "🌈 分享快乐时刻！每一天都值得被记录和庆祝！🎉\n\n生活中的小确幸就是最大的幸福！💖\n\n#分享快乐 #幸福时光 #生活记录"
+            douyin: {
+                name: '抖音',
+                videoUrl: "https://v95-web-sz.douyinvod.com/88254fe929fc8ac62df2e8760f85bcba/68cc133e/video/tos/cn/tos-cn-ve-15/oQ1ArEFnuQD3ZggA1aPgfJEuofI09dLADN11sB/?a=6383&ch=26&cr=3&dr=0&lr=all&cd=0%7C0%7C0%7C3&cv=1&br=1702&bt=1702&cs=0&ds=6&ft=GZnU0RqeffPdXP~ka1jNvAq-antLjrK5YPRCRkartW__ejVhWL6&mime_type=video_mp4&qs=0&rc=NGg3OjRmOTMzPDc7Ojc7NUBpanFxa2o5cnBvNTMzNGkzM0AyMzAvYGI1NTYxMjZiLjAyYSMzXzFfMmRjbmNhLS1kLTBzcw%3D%3D&btag=c0000e00018000&cquery=100o_100w_100B_100H_100K&dy_q=1758193903&feature_id=f0150a16a324336cda5d6dd0b69ed299&l=2025091819114364B1552B1A8BBBAE5B19&testst=1758193909867",
+                prefillText: "🌈 分享快乐时刻！每一天都值得被记录和庆祝！🎉\n\n生活中的小确幸就是最大的幸福，把这份快乐传递给你！💖\n\n#分享快乐 #幸福时光 #生活记录 #正能量传递",
+                // 尝试多种Scheme方案
+                schemes: [
+                    "snssdk1128://create?text={text}",
+                    "snssdk1128://camera?text={text}",
+                    "snssdk1128://microapp/create?type=video&content={text}",
+                    "snssdk1128://platformapi/startapp?start_type=share&share_type=video&video_path={videoUrl}&content={text}",
+                    "snssdk1128://main"
+                ]
+            },
+            kuaishou: {
+                name: '快手',
+                videoUrl: "https://example.com/your-kuaishou-video.mp4", // 请替换为快手视频直链
+                prefillText: "🌈 分享快乐时刻！用NFC触碰一下就能分享视频，科技改变生活！🌟\n\n#快手分享 #快乐时刻 #科技生活",
+                schemes: [
+                    "kwai://create?text={text}",
+                    "kwai://camera?text={text}",
+                    "kwai://main"
+                ]
+            }
         };
 
-        // ==================== 抖音分享函数 ====================
+        // ==================== 平台分享函数 ====================
         function shareToDouyin() {
-            showStatus('正在跳转到抖音发布页面...', 'loading');
+            startShare('douyin');
+        }
+        
+        function shareToKuaishou() {
+            startShare('kuaishou');
+        }
+        
+        function startShare(platform) {
+            console.log(`开始分享到: ${platform}`);
             
-            // 抖音官方创作页面Scheme（最有可能直接进入发布页面）
-            const douyinScheme = `snssdk1128://microapp/create?type=video&video_url=${encodeURIComponent(CONFIG.videoUrl)}&content=${encodeURIComponent(CONFIG.prefillText)}`;
+            const config = CONFIG[platform];
+            if (!config) {
+                showStatus('错误：未找到该平台的配置信息', 'error');
+                return;
+            }
             
-            console.log('使用的Scheme:', douyinScheme);
+            // 隐藏之前的指引
+            document.getElementById('guideBox').style.display = 'none';
+            document.getElementById('successAnimation').style.display = 'none';
+            
+            // 显示加载状态
+            showStatus(`正在准备${config.name}分享...`, 'loading');
+            
+            // 尝试所有Scheme方案
+            tryAllSchemes(platform, config, 0);
+        }
+        
+        function tryAllSchemes(platform, config, index) {
+            if (index >= config.schemes.length) {
+                // 所有方案都尝试失败
+                showStatus(`无法直接跳转到${config.name}发布页面`, 'error');
+                showManualGuide(platform, config.prefillText);
+                return;
+            }
+            
+            const scheme = config.schemes[index];
+            const url = scheme
+                .replace('{videoUrl}', encodeURIComponent(config.videoUrl))
+                .replace('{text}', encodeURIComponent(config.prefillText));
+            
+            showStatus(`尝试方案 ${index + 1}/${config.schemes.length}: ${getSchemeDescription(scheme)}`, 'loading');
+            console.log(`尝试Scheme: ${url}`);
             
             // 记录开始时间
             const startTime = Date.now();
             
             // 尝试跳转
-            window.location.href = douyinScheme;
+            window.location.href = url;
             
             // 检查跳转结果
             setTimeout(() => {
                 if (!document.hidden) {
-                    showStatus('跳转失败，尝试备用方案...', 'error');
-                    // 备用方案：尝试直接打开抖音
-                    setTimeout(() => {
-                        window.location.href = 'snssdk1128://main';
-                    }, 2000);
+                    // 跳转失败，尝试下一个方案
+                    showStatus(`方案 ${index + 1} 未成功，尝试下一方案...`, 'error');
+                    setTimeout(() => tryAllSchemes(platform, config, index + 1), 2000);
+                } else {
+                    // 跳转成功
+                    showSuccessAnimation();
                 }
             }, 1500);
         }
-
-        // ==================== 辅助函数 ====================
+        
+        function getSchemeDescription(scheme) {
+            if (scheme.includes('create')) return '创作页面';
+            if (scheme.includes('camera')) return '拍摄页面';
+            if (scheme.includes('share')) return '分享页面';
+            if (scheme.includes('microapp')) return '微应用页面';
+            if (scheme.includes('main')) return '主页面';
+            return '未知页面';
+        }
+        
+        function showSuccessAnimation() {
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('successAnimation').style.display = 'block';
+        }
+        
+        function showManualGuide(platform, text) {
+            const config = CONFIG[platform];
+            const guideBox = document.getElementById('guideBox');
+            const guideText = document.getElementById('guide-text');
+            const copyText = document.getElementById('copy-text');
+            
+            let guideHTML = '';
+            
+            if (platform === 'douyin') {
+                guideHTML = `
+                    <p>由于抖音限制，自动跳转发布页面失败，请按以下步骤操作：</p>
+                    <ol>
+                        <li>复制下方文案</li>
+                        <li>打开抖音App</li>
+                        <li>点击底部"<strong>+</strong>"号按钮</li>
+                        <li>选择"<strong>上传</strong>"视频</li>
+                        <li>在文案区粘贴准备好的文案</li>
+                        <li>点击"<strong>发布</strong>"完成分享</li>
+                    </ol>
+                `;
+            } else {
+                guideHTML = `
+                    <p>由于快手限制，自动跳转发布页面失败，请按以下步骤操作：</p>
+                    <ol>
+                        <li>复制下方文案</li>
+                        <li>打开快手App</li>
+                        <li>点击底部"<strong>+</strong>"号按钮</li>
+                        <li>选择视频上传或拍摄</li>
+                        <li>粘贴文案后发布</li>
+                    </ol>
+                `;
+            }
+            
+            guideText.innerHTML = guideHTML;
+            copyText.value = text;
+            guideBox.style.display = 'block';
+            
+            // 自动选中文案方便用户复制
+            setTimeout(() => {
+                copyText.select();
+            }, 500);
+        }
+        
         function showStatus(message, type) {
             const statusBox = document.getElementById('status');
             const statusText = document.getElementById('status-text');
             
             statusText.textContent = message;
-            statusBox.className = type;
+            statusBox.className = `status-box status-${type}`;
             statusBox.style.display = 'block';
         }
-
-        // 页面可见性检测
+        
+        // 页面可见性变化检测
         document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
-                showStatus('跳转成功！请在抖音中查看', 'success');
+                showSuccessAnimation();
             }
         });
+        
+        console.log('NFC一键分享中枢已加载完成');
     </script>
 </body>
 </html>
