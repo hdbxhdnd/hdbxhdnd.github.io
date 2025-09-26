@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFC一键分享中枢</title>
-    <!-- 引入抖音官方Web SDK -->
-    <script src="https://s3.pstatp.com/toutiao/open-platform/sdk.js"></script>
+    <title>NFC一键分享到抖音</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'PingFang SC', sans-serif; }
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
@@ -14,149 +12,62 @@
         .share-btn { 
             width: 100%; padding: 18px; margin: 12px 0; border: none; border-radius: 12px; 
             font-size: 17px; font-weight: 600; cursor: pointer; color: white; transition: all 0.3s;
+            background: linear-gradient(45deg, #000000, #FE2C55);
         }
         .share-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        #btn-douyin { background: linear-gradient(45deg, #000000, #FE2C55); }
-        #btn-kuaishou { background: linear-gradient(45deg, #FF0000, #FF9000); }
         
         .status-box { margin: 20px 0; padding: 15px; border-radius: 12px; display: none; }
-        .status-loading { background: #e3f2fd; color: #1565c0; }
-        .status-success { background: #e8f5e9; color: #2e7d32; }
-        .status-error { background: #ffebee; color: #c62828; }
+        .loading { background: #e3f2fd; color: #1565c0; display: block; }
+        .success { background: #e8f5e9; color: #2e7d32; display: block; }
+        .error { background: #ffebee; color: #c62828; display: block; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎯 全自动分享</h1>
-        <p style="color: #666; margin: 10px 0 30px;">选择平台，自动进入发布页面</p>
+        <h1>🎯 NFC一键分享</h1>
+        <p style="color: #666; margin: 10px 0 30px;">点击直接跳转到抖音发布页面</p>
         
-        <button class="share-btn" id="btn-douyin" onclick="shareToDouyin()">
+        <button class="share-btn" onclick="shareToDouyin()">
             📹 分享到抖音
-        </button>
-        
-        <button class="share-btn" id="btn-kuaishou" onclick="shareToKuaishou()">
-            ⚡ 分享到快手
         </button>
 
         <div id="status" class="status-box">
-            <p id="status-text"></p>
+            <p id="status-text">准备就绪</p>
         </div>
     </div>
 
     <script>
         // ==================== 配置信息 ====================
         const CONFIG = {
-            douyin: {
-                videoUrl: "https://v95-web-sz.douyinvod.com/88254fe929fc8ac62df2e8760f85bcba/68cc133e/video/tos/cn/tos-cn-ve-15/oQ1ArEFnuQD3ZggA1aPgfJEuofI09dLADN11sB/?your_video_params",
-                prefillText: "🌈 分享快乐时刻！每一天都值得被记录和庆祝！🎉\n\n生活中的小确幸就是最大的幸福！💖\n\n#分享快乐 #幸福时光 #生活记录",
-                // 抖音官方分享深度链接
-                scheme: "snssdk1128://platformapi/startapp?start_type=share&share_type=video&video_path={videoUrl}&content={text}&auto_fill=1"
-            },
-            kuaishou: {
-                videoUrl: "https://你的快手视频直链.mp4",
-                prefillText: "🌈 分享快乐时刻！把这份快乐传递给你！🌟\n\n#分享快乐 #幸福时光",
-                // 快手官方分享深度链接
-                scheme: "kwai://create?text={text}&video_url={videoUrl}&auto_publish=1"
-            }
+            videoUrl: "https://v95-web-sz.douyinvod.com/88254fe929fc8ac62df2e8760f85bcba/68cc133e/video/tos/cn/tos-cn-ve-15/oQ1ArEFnuQD3ZggA1aPgfJEuofI09dLADN11sB/?your_params",
+            prefillText: "🌈 分享快乐时刻！每一天都值得被记录和庆祝！🎉\n\n生活中的小确幸就是最大的幸福！💖\n\n#分享快乐 #幸福时光 #生活记录"
         };
 
         // ==================== 抖音分享函数 ====================
-        async function shareToDouyin() {
-            showStatus('正在准备抖音分享...', 'loading');
+        function shareToDouyin() {
+            showStatus('正在跳转到抖音发布页面...', 'loading');
             
-            try {
-                const config = CONFIG.douyin;
-                const shareUrl = config.scheme
-                    .replace('{videoUrl}', encodeURIComponent(config.videoUrl))
-                    .replace('{text}', encodeURIComponent(config.prefillText));
-
-                // 方法1: 使用官方SDK（如果可用）
-                if (window.DouyinShare) {
-                    await window.DouyinShare.share({
-                        video_url: config.videoUrl,
-                        text: config.prefillText,
-                        success: function() {
-                            showStatus('抖音分享已启动！', 'success');
-                        },
-                        fail: function() {
-                            // SDK失败，使用深度链接
-                            openDeepLink(shareUrl, 'douyin');
-                        }
-                    });
-                } else {
-                    // 方法2: 使用增强版深度链接
-                    openDeepLink(shareUrl, 'douyin');
-                }
-            } catch (error) {
-                console.error('抖音分享错误:', error);
-                showStatus('抖音分享失败，尝试备用方案...', 'error');
-                setTimeout(() => openDeepLink(CONFIG.douyin.scheme, 'douyin'), 1000);
-            }
-        }
-
-        // ==================== 快手分享函数 ====================
-        function shareToKuaishou() {
-            showStatus('正在准备快手分享...', 'loading');
+            // 抖音官方创作页面Scheme（最有可能直接进入发布页面）
+            const douyinScheme = `snssdk1128://microapp/create?type=video&video_url=${encodeURIComponent(CONFIG.videoUrl)}&content=${encodeURIComponent(CONFIG.prefillText)}`;
             
-            const config = CONFIG.kuaishou;
-            const shareUrl = config.scheme
-                .replace('{videoUrl}', encodeURIComponent(config.videoUrl))
-                .replace('{text}', encodeURIComponent(config.prefillText));
-            
-            openDeepLink(shareUrl, 'kuaishou');
-        }
-
-        // ==================== 增强版深度链接打开 ====================
-        function openDeepLink(url, platform) {
-            console.log(`打开${platform}深度链接:`, url);
+            console.log('使用的Scheme:', douyinScheme);
             
             // 记录开始时间
             const startTime = Date.now();
             
-            // 方法1: 直接跳转
-            window.location.href = url;
+            // 尝试跳转
+            window.location.href = douyinScheme;
             
-            // 方法2: 定时检查是否跳转成功
+            // 检查跳转结果
             setTimeout(() => {
-                if (Date.now() - startTime > 500 && !document.hidden) {
-                    // 跳转失败，尝试备用方案
-                    showStatus(`自动跳转失败，尝试其他方式...`, 'error');
-                    tryAlternativeMethods(platform);
-                } else {
-                    showStatus(`跳转成功！正在打开${platform}...`, 'success');
+                if (!document.hidden) {
+                    showStatus('跳转失败，尝试备用方案...', 'error');
+                    // 备用方案：尝试直接打开抖音
+                    setTimeout(() => {
+                        window.location.href = 'snssdk1128://main';
+                    }, 2000);
                 }
-            }, 300);
-            
-            // 方法3: 使用iframe作为备用（针对iOS）
-            setTimeout(() => {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = url;
-                document.body.appendChild(iframe);
-                setTimeout(() => document.body.removeChild(iframe), 1000);
-            }, 100);
-        }
-
-        // ==================== 备用方案 ====================
-        function tryAlternativeMethods(platform) {
-            const config = CONFIG[platform];
-            const alternatives = [
-                `snssdk1128://create?text=${encodeURIComponent(config.prefillText)}`,
-                `kwai://create?text=${encodeURIComponent(config.prefillText)}`,
-                `douyin://create?text=${encodeURIComponent(config.prefillText)}`
-            ];
-            
-            // 尝试所有备用方案
-            alternatives.forEach((scheme, index) => {
-                setTimeout(() => {
-                    window.location.href = scheme;
-                }, index * 500);
-            });
-            
-            // 最终备用方案
-            setTimeout(() => {
-                showStatus(`请手动打开${platform}完成分享`, 'error');
-            }, 2000);
+            }, 1500);
         }
 
         // ==================== 辅助函数 ====================
@@ -165,22 +76,16 @@
             const statusText = document.getElementById('status-text');
             
             statusText.textContent = message;
-            statusBox.className = `status-box status-${type}`;
+            statusBox.className = type;
             statusBox.style.display = 'block';
-            
-            if (type === 'success') {
-                setTimeout(() => statusBox.style.display = 'none', 3000);
-            }
         }
 
         // 页面可见性检测
-        document.addEventListener('visibilitychange', () => {
+        document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
-                showStatus('跳转成功！请在App中完成发布', 'success');
+                showStatus('跳转成功！请在抖音中查看', 'success');
             }
         });
-
-        console.log('全自动分享系统已就绪');
     </script>
 </body>
 </html>
