@@ -1,20 +1,60 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <title>视频分享中心</title>
   <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    video { width: 100%; border-radius: 12px; margin-top: 20px; }
-    h2 { color: #333; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom right, #fafafa, #dfe9f3);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    h2 { color: #333; margin-bottom: 20px; }
+    button {
+      background-color: #ff0050;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-size: 18px;
+      margin: 10px;
+      cursor: pointer;
+      width: 220px;
+      transition: 0.3s;
+    }
+    button.ks { background-color: #ff6600; }
+    button:hover { transform: scale(1.05); }
+    p { color: #666; }
   </style>
 </head>
 <body>
-  <h2>欢迎观看我的视频 🎬</h2>
-  <p>点击下方播放按钮观看完整视频</p>
-  <video controls autoplay>
-    <source src=" ͍https://v.douyin.com/lkYKioQTl3Y/ V@Y.MJ 01/16 Syt:/ ">
-    你的浏览器不支持视频播放。
-  </video>
+  <h2>选择平台分享视频 🎬</h2>
+  <p>请选择你要分享到的平台：</p>
+
+  <!-- 抖音按钮 -->
+  <button onclick="shareDouyin()">分享到抖音</button>
+  
+  <!-- 快手按钮 -->
+  <button class="ks" onclick="shareKuaishou()">分享到快手</button>
+
+  <script>
+    const videoLink = "https://v.douyin.com/lkYKioQTl3Y/";
+    const text = encodeURIComponent("V@Y.MJ 01/16 Syt:/ 精彩视频快来看看！");
+    
+    function shareDouyin() {
+      // 抖音跳转分享（这里是简化逻辑）
+      window.location.href = `snssdk1128://share?url=${encodeURIComponent(videoLink)}&text=${text}`;
+    }
+
+    function shareKuaishou() {
+      // 快手跳转分享（也使用App内部协议）
+      window.location.href = `kwai://share?url=${encodeURIComponent(videoLink)}&text=${text}`;
+    }
+  </script>
 </body>
 </html>
