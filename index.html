@@ -42,18 +42,39 @@
   <!-- 快手按钮 -->
   <button class="ks" onclick="shareKuaishou()">分享到快手</button>
 
+  <p id="copyMsg" style="color: green; display:none;">✅ 文案已复制，请粘贴到抖音发布界面！</p>
+
   <script>
     const videoLink = "https://v.douyin.com/lkYKioQTl3Y/";
-    const text = encodeURIComponent("V@Y.MJ 01/16 Syt:/ 精彩视频快来看看！");
-    
+    const textToCopy = "V@Y.MJ 01/16 Syt:/ 精彩视频快来看看！";
+
+    // 复制文字到剪贴板
+    function copyText() {
+      const temp = document.createElement('textarea');
+      temp.value = textToCopy;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+      document.getElementById('copyMsg').style.display = 'block';
+    }
+
     function shareDouyin() {
-      // 抖音跳转分享（这里是简化逻辑）
-      window.location.href = `snssdk1128://share?url=${encodeURIComponent(videoLink)}&text=${text}`;
+      copyText(); // 先复制文案
+      // 尝试打开抖音App视频页
+      window.location.href = "snssdk1128://webview?url=" + encodeURIComponent(videoLink);
+      // 如果App未安装，则跳转到网页版视频
+      setTimeout(() => {
+        window.location.href = videoLink;
+      }, 2000);
     }
 
     function shareKuaishou() {
-      // 快手跳转分享（也使用App内部协议）
-      window.location.href = `kwai://share?url=${encodeURIComponent(videoLink)}&text=${text}`;
+      copyText();
+      window.location.href = "kwai://webview?url=" + encodeURIComponent(videoLink);
+      setTimeout(() => {
+        window.location.href = videoLink;
+      }, 2000);
     }
   </script>
 </body>
